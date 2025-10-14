@@ -2,3 +2,8 @@
     margin-top: 40px;
     padding: 20px;
 }
+
+.color-favorito {
+    color: rgb(0, 183, 255) ; /* Cambia este valor al color que prefieras */
+}
+
