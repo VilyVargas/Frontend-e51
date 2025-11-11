@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Container, Col, Row, Button } from "react-bootstrap";
 import TablaCategorias from "../components/categorias/TablaCategorias";
-import CuadroBusquedas from "../components/Busquedas/CuadroBusquedas";
+import CuadroBusquedas from "../components/busquedas/CuadroBusquedas";
 import ModalRegistroCategoria from "../components/categorias/ModalRegistroCategoria";
 import BotonOrden from "../components/ordenamiento/BotonOrden";
 import ModalEdicionCategoria from "../components/categorias/ModalEdicionCategoria";
@@ -10,6 +10,9 @@ import ModalEliminacionCategoria from "../components/categorias/ModalEliminacion
 const Categorias = () => {
   const [categorias, setCategorias] = useState([]);
   const [cargando, setCargando] = useState(true);
+
+  const [paginaActual, establecerPaginaActual] = useState(1);
+  const elementosPorPagina = 5; // Número de productos por página
 
   const [categoriasFiltradas, setCategoriasFiltradas] = useState([]);
   const [textoBusqueda, setTextoBusqueda] = useState("");
@@ -41,6 +44,12 @@ const Categorias = () => {
     setCategoriaAEliminar(categoria);
     setMostrarModalEliminar(true);
   };
+
+  const categoriasPaginadas = categoriasFiltradas.slice(
+  (paginaActual - 1) * elementosPorPagina,
+  paginaActual * elementosPorPagina
+);
+
 
 
     const guardarEdicion = async () => {
@@ -159,10 +168,14 @@ const Categorias = () => {
         </Row>
 
         <TablaCategorias
-          categorias={categoriasFiltradas}
+          categorias={categoriasPaginadas}
           cargando={cargando}
           abrirModalEdicion={abrirModalEdicion}
           abrirModalEliminacion={abrirModalEliminacion}
+          totalElementos={categorias.length} // Total de categorias
+          elementosPorPagina={elementosPorPagina} // Elementos por página
+          paginaActual={paginaActual} // Página actual
+          establecerPaginaActual={establecerPaginaActual} // Método para cambiar página
         />
 
         <ModalRegistroCategoria

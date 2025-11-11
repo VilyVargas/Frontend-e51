@@ -1,8 +1,9 @@
 import { Table, Spinner, Button } from "react-bootstrap";
 import BotonOrden from "../ordenamiento/BotonOrden";
+import Paginacion from "../ordenamiento/Paginacion";
 import React, { useState } from "react";
 
-const TablaCategorias = ({ categorias, cargando, abrirModalEdicion, abrirModalEliminacion }) => {
+const TablaCategorias = ({ categorias, cargando, abrirModalEdicion, abrirModalEliminacion, totalElementos,elementosPorPagina,paginaActual,establecerPaginaActual}) => {
   const [orden, setOrden] = useState({
     campo: "id_categoria",
     direccion: "asc",
@@ -98,6 +99,13 @@ const TablaCategorias = ({ categorias, cargando, abrirModalEdicion, abrirModalEl
           })}
         </tbody>
       </Table>
+      <Paginacion
+  elementosPorPagina={elementosPorPagina}
+  totalElementos={totalElementos}
+  paginaActual={paginaActual}
+  establecerPaginaActual={establecerPaginaActual}
+/>
+
     </>
   );
 };
