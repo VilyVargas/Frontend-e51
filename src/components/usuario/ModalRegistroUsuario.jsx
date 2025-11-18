@@ -1,28 +1,28 @@
 import { Modal, Form, Button } from "react-bootstrap";
 
-const ModalRegistroCategoria = ({
+const ModalRegistroUsuarios = ({
   mostrarModal,
   setMostrarModal,
   nuevoUsuario,
   manejarCambioInput,
-  agregarUsuario,
+  agregarUsuario
 }) => {
   return (
-    <Modal backdrop="static" show={mostrarModal} onHide={() => setMostrarModal(false)} centered size="md">
+    <Modal backdrop="static" show={mostrarModal} onHide={() => setMostrarModal(false)} centered>
       <Modal.Header closeButton>
         <Modal.Title>Agregar Nuevo Usuario</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <Form>
           <Form.Group className="mb-3" controlId="usuario">
-            <Form.Label>Nombre del usuario</Form.Label>
+            <Form.Label>Nombre del Usuario</Form.Label>
             <Form.Control
               type="text"
               name="usuario"
               value={nuevoUsuario.usuario}
               onChange={manejarCambioInput}
-              placeholder="Ej: eli123"
-              maxLength={20}
+              placeholder="Ej: Tito calderon"
+              maxLength={100}
               required
             />
           </Form.Group>
@@ -32,9 +32,9 @@ const ModalRegistroCategoria = ({
             <Form.Control
               type="password"
               name="contraseña"
-              value={nuevoUsuario.contraseña}
+              password={nuevoUsuario.contraseña}
               onChange={manejarCambioInput}
-              placeholder="ingrese la contraseña"
+              placeholder="contraseña (máx. 100 caracteres)"
               maxLength={100}
             />
           </Form.Group>
@@ -49,11 +49,11 @@ const ModalRegistroCategoria = ({
           onClick={agregarUsuario}
           disabled={!nuevoUsuario.usuario.trim()}
         >
-          Guardar usuario
+          Guardar Usuario
         </Button>
       </Modal.Footer>
     </Modal>
   );
 };
 
-export default ModalRegistroCategoria;
+export default ModalRegistroUsuarios;

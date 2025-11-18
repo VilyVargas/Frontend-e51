@@ -1,22 +1,24 @@
 import { Modal, Button } from "react-bootstrap";
 
-const ModalEliminacionCompra = ({
+const ModalEliminarUsuario = ({
   mostrar,
   setMostrar,
-  compra,
+  usuario,
   confirmarEliminacion,
 }) => {
   return (
     <Modal show={mostrar} onHide={() => setMostrar(false)} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Eliminar Compra</Modal.Title>
+        <Modal.Title>Confirmar Eliminación</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         <p>
-          ¿Seguro que deseas eliminar la compra con ID{" "}
-          <strong>{compra?.id_compra}</strong>?
+          ¿Estás seguro de que deseas eliminar el Usuario{" "}
+          <strong>"{usuario?.usuario}"</strong>?
         </p>
-        <p className="text-muted small">Esta acción no se puede deshacer.</p>
+        <p className="text-muted small">
+          Esta acción no se puede deshacer.
+        </p>
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={() => setMostrar(false)}>
@@ -29,5 +31,4 @@ const ModalEliminacionCompra = ({
     </Modal>
   );
 };
-
-export default ModalEliminacionCompra;
+export default ModalEliminarUsuario;

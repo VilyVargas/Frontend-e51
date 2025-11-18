@@ -3,17 +3,16 @@ import { Table, Button, Spinner } from "react-bootstrap";
 import BotonOrden from "../ordenamiento/BotonOrden";
 import Paginacion from "../ordenamiento/Paginacion";
 
-const TablaCompras = ({
-  compras,
+const TablaClientes = ({
+  clientes,
   abrirModalEdicion,
   abrirModalEliminacion,
-  abrirModalDetalles,
   totalElementos,
   elementosPorPagina,
   paginaActual,
   establecerPaginaActual
 }) => {
-  const [orden, setOrden] = useState({ campo: "id_compra", direccion: "asc" });
+  const [orden, setOrden] = useState({ campo: "id_cliente", direccion: "asc" });
 
   const manejarOrden = (campo) => {
     setOrden((prev) => ({
@@ -23,21 +22,18 @@ const TablaCompras = ({
     }));
   };
 
-  const comprasOrdenadas = [...compras].sort((a, b) => {
+  const clientesOrdenados = [...clientes].sort((a, b) => {
     const valorA = a[orden.campo] ?? "";
     const valorB = b[orden.campo] ?? "";
-    if (typeof valorA === "number" && typeof valorB === "number") {
-      return orden.direccion === "asc" ? valorA - valorB : valorB - valorA;
-    }
     const comparacion = String(valorA).localeCompare(String(valorB));
     return orden.direccion === "asc" ? comparacion : -comparacion;
   });
 
-  if (!compras.length) {
+  if (!clientes.length) {
     return (
       <div className="text-center my-4">
         <Spinner animation="border" />
-        <p>Cargando compras...</p>
+        <p>Cargando clientes...</p>
       </div>
     );
   }
@@ -47,41 +43,35 @@ const TablaCompras = ({
       <Table striped bordered hover className="mt-3 align-middle">
         <thead>
           <tr>
-            <BotonOrden campo="id_compra" orden={orden} manejarOrden={manejarOrden}>ID</BotonOrden>
-            <BotonOrden campo="id_empleado" orden={orden} manejarOrden={manejarOrden}>Empleado</BotonOrden>
-            <BotonOrden campo="fecha_compra" orden={orden} manejarOrden={manejarOrden}>Fecha</BotonOrden>
-            <BotonOrden campo="total_compra" orden={orden} manejarOrden={manejarOrden}>Total (C$)</BotonOrden>
+            <BotonOrden campo="id_cliente" orden={orden} manejarOrden={manejarOrden}>ID</BotonOrden>
+            <BotonOrden campo="primer_nombre" orden={orden} manejarOrden={manejarOrden}>Primer Nombre</BotonOrden>
+            <BotonOrden campo="primer_apellido" orden={orden} manejarOrden={manejarOrden}>Primer Apellido</BotonOrden>
+            <th>Celular</th>
+            <th>Cédula</th>
             <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {comprasOrdenadas.map((compra) => (
-            <tr key={compra.id_compra}>
-              <td>{compra.id_compra}</td>
-              <td>{compra.id_empleado}</td>
-              <td>{new Date(compra.fecha_compra).toLocaleDateString()}</td>
-              <td>{Number(compra.total_compra).toFixed(2)}</td>
+          {clientesOrdenados.map((cliente) => (
+            <tr key={cliente.id_cliente}>
+              <td>{cliente.id_cliente}</td>
+              <td>{cliente.primer_nombre} {cliente.segundo_nombre}</td>
+              <td>{cliente.primer_apellido} {cliente.segundo_apellido}</td>
+              <td>{cliente.celular}</td>
+              <td>{cliente.cedula}</td>
               <td>
-                <Button
-                  variant="outline-info"
-                  size="sm"
-                  className="me-2"
-                  onClick={() => abrirModalDetalles(compra)}
-                >
-                  <i className="bi bi-list"></i>
-                </Button>
                 <Button
                   variant="outline-warning"
                   size="sm"
                   className="me-2"
-                  onClick={() => abrirModalEdicion(compra)}
+                  onClick={() => abrirModalEdicion(cliente)}
                 >
                   <i className="bi bi-pencil"></i>
                 </Button>
                 <Button
                   variant="outline-danger"
                   size="sm"
-                  onClick={() => abrirModalEliminacion(compra)}
+                  onClick={() => abrirModalEliminacion(cliente)}
                 >
                   <i className="bi bi-trash"></i>
                 </Button>
@@ -101,4 +91,4 @@ const TablaCompras = ({
   );
 };
 
-export default TablaCompras;
+export default TablaClientes;
