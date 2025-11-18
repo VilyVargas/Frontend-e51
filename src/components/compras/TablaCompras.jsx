@@ -58,7 +58,7 @@ const TablaCompras = ({
           {comprasOrdenadas.map((compra) => (
             <tr key={compra.id_compra}>
               <td>{compra.id_compra}</td>
-              <td>{compra.id_empleado}</td>
+              <td>{compra.nombre_empleado || compra.id_empleado}</td>
               <td>{new Date(compra.fecha_compra).toLocaleDateString()}</td>
               <td>{Number(compra.total_compra).toFixed(2)}</td>
               <td>

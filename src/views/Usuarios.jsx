@@ -141,7 +141,9 @@ const Usuarios = () => {
   }, []);
 
   return (
-    <>
+    
+    <Container className="mt-4">
+        <h4>Usuarios</h4>
 
       <Row>
         <Col lg={5} md={8} sm={8} xs={7}>
@@ -161,8 +163,7 @@ const Usuarios = () => {
         </Col>
 
       </Row>
-      <Container className="mt-4">
-        <h4>Usuarios</h4>
+      
         <TablaUsuario
           usuarios={usuariosPaginados}
           cargando={cargando}
@@ -198,7 +199,7 @@ const Usuarios = () => {
         />
 
       </Container>
-    </>
+    
   );
 }
 export default Usuarios;

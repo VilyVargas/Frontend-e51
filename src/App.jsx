@@ -5,6 +5,7 @@ import './App.css';
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom"; //Importar componente Encabezado.
 import Encabezado from "./components/navegacion/Encabezado";
+import RutaProtegida from "./components/rutas/RutaProtegida.jsx";
 
 //Importar las vistas.
 import Login from "./views/Login";
@@ -27,8 +28,9 @@ const App = () =>{
       <Encabezado />
       <main className="margen-superior-main">
         <Routes>
-          <Route path="/" element={<Inicio />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Login />} />
+          <Route path="/inicio" element={<Inicio />} />
+          <Route path="/inicio" element={<RutaProtegida vista={<Inicio />} />} />
           <Route path="/usuarios" element={<Usuarios />} />
           <Route path="/ventas" element={<Ventas />} />
           <Route path="/empleados" element={<Empleados />} />

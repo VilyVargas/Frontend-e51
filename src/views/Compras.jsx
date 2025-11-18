@@ -36,8 +36,16 @@ const Compras = () => {
       const respuesta = await fetch("http://localhost:3000/api/compras");
       if (!respuesta.ok) throw new Error("Error al obtener compras");
       const datos = await respuesta.json();
-      setCompras(datos);
-      setComprasFiltradas(datos);
+      // agregar nombre de empleado para mostrar en la tabla
+      const datosConNombres = await Promise.all(
+        datos.map(async (c) => ({
+          ...c,
+          nombre_empleado: await obtenerNombreEmpleado(c.id_empleado),
+        }))
+      );
+
+      setCompras(datosConNombres);
+      setComprasFiltradas(datosConNombres);
     } catch (error) {
       console.error(error.message);
     }
@@ -45,19 +53,35 @@ const Compras = () => {
 
   const agregarCompra = async () => {
     if (!nuevaCompra.id_empleado || !nuevaCompra.fecha_compra) return;
+    if (!detallesNuevos.length) {
+      alert("Agrega al menos un producto a la compra.");
+      return;
+    }
     try {
+      const total = detallesNuevos.reduce((sum, d) => sum + (d.cantidad * d.precio_unitario), 0);
       const respuesta = await fetch("http://localhost:3000/api/registrarcompra", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevaCompra),
+        body: JSON.stringify({ ...nuevaCompra, total_compra: total }),
       });
       if (!respuesta.ok) throw new Error("Error al guardar compra");
+      const { id_compra } = await respuesta.json();
+
+      // registrar detalles de compra (similar a ventas)
+      for (const d of detallesNuevos) {
+        await fetch('http://localhost:3000/api/registrardetallecompra', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...d, id_compra })
+        });
+      }
       setNuevaCompra({
         id_empleado: "",
         fecha_compra: "",
         total_compra: "",
       });
       setMostrarModal(false);
+      setDetallesNuevos([]);
       await obtenerCompras();
     } catch (error) {
       console.error("Error al agregar compra:", error);
@@ -78,21 +102,75 @@ const Compras = () => {
 
   const abrirModalEdicion = (compra) => {
     setCompraSeleccionada({ ...compra });
+    // cargar detalles de la compra y mapear nombre de producto
+    (async () => {
+      try {
+        const resp = await fetch('http://localhost:3000/api/detallescompras');
+        if (!resp.ok) throw new Error('Error al cargar detalles');
+        const todos = await resp.json();
+        const detallesRaw = todos.filter(d => d.id_compra === compra.id_compra);
+
+        const detallesConNombres = await Promise.all(
+          detallesRaw.map(async (d) => {
+            try {
+              const r = await fetch(`http://localhost:3000/api/producto/${d.id_producto}`);
+              const pd = r.ok ? await r.json() : null;
+              return {
+                id_producto: d.id_producto,
+                id_detalle_compra: d.id_detalle_compra,
+                nombre_producto: pd ? pd.nombre_producto : '—',
+                cantidad: d.cantidad,
+                precio_unitario: d.precio_unitario
+              };
+            } catch (error) {
+              return { ...d, nombre_producto: '—' };
+            }
+          })
+        );
+
+        setDetallesNuevos(detallesConNombres);
+      } catch (error) {
+        console.error(error);
+      }
+    })();
+
     setMostrarModalEdicion(true);
   };
 
   const guardarEdicion = async () => {
     try {
+      // recalcular total desde detalles
+      const total = detallesNuevos.reduce((sum, d) => sum + (d.cantidad * d.precio_unitario), 0);
+
       const respuesta = await fetch(
         `http://localhost:3000/api/actualizarcompra/${compraSeleccionada.id_compra}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(compraSeleccionada),
+          body: JSON.stringify({ ...compraSeleccionada, total_compra: total }),
         }
       );
       if (!respuesta.ok) throw new Error("Error al actualizar compra");
+
+      // eliminar detalles antiguos
+      const resp = await fetch('http://localhost:3000/api/detallescompras');
+      const todos = await resp.json();
+      const actuales = todos.filter(d => d.id_compra === compraSeleccionada.id_compra);
+      for (const d of actuales) {
+        await fetch(`http://localhost:3000/api/eliminardetallecompra/${d.id_detalle_compra}`, { method: 'DELETE' });
+      }
+
+      // registrar nuevos detalles
+      for (const d of detallesNuevos) {
+        await fetch('http://localhost:3000/api/registrardetallecompra', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id_compra: compraSeleccionada.id_compra, id_producto: d.id_producto, cantidad: d.cantidad, precio_unitario: d.precio_unitario })
+        });
+      }
+
       setMostrarModalEdicion(false);
+      setDetallesNuevos([]);
       await obtenerCompras();
     } catch (error) {
       console.error("Error al editar compra:", error);
@@ -125,9 +203,54 @@ const Compras = () => {
     setMostrarModalDetalles(true);
   };
 
+  // === CARGAR CATÁLOGOS ===
+  const [empleados, setEmpleados] = useState([]);
+  const [productos, setProductos] = useState([]);
+
+  const obtenerEmpleados = async () => {
+    try {
+      const resp = await fetch('http://localhost:3000/api/empleados');
+      if (!resp.ok) throw new Error('Error al cargar empleados');
+      const datos = await resp.json();
+      setEmpleados(datos);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const obtenerProductos = async () => {
+    try {
+      const resp = await fetch('http://localhost:3000/api/productos');
+      if (!resp.ok) throw new Error('Error al cargar productos');
+      const datos = await resp.json();
+      setProductos(datos);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const obtenerNombreEmpleado = async (idEmpleado) => {
+    if (!idEmpleado) return '—';
+    try {
+      const resp = await fetch(`http://localhost:3000/api/empleado/${idEmpleado}`);
+      if (!resp.ok) return '—';
+      const data = await resp.json();
+      return `${data.primer_nombre} ${data.primer_apellido}`;
+    } catch (error) {
+      console.error("Error al cargar nombre del empleado:", error);
+      return '—';
+    }
+  };
+
   useEffect(() => {
     obtenerCompras();
+    obtenerEmpleados();
+    obtenerProductos();
   }, []);
+
+  // === ESTADO PARA DETALLES ===
+  const [detallesNuevos, setDetallesNuevos] = useState([]);
+  const hoy = new Date().toISOString().split('T')[0];
 
   const comprasPaginadas = comprasFiltradas.slice(
     (paginaActual - 1) * elementosPorPagina,
@@ -168,6 +291,11 @@ const Compras = () => {
         nuevaCompra={nuevaCompra}
         manejarCambioInput={manejarCambioInput}
         agregarCompra={agregarCompra}
+        empleados={empleados}
+        productos={productos}
+        detalles={detallesNuevos}
+        setDetalles={setDetallesNuevos}
+        hoy={hoy}
       />
 
       <ModalEdicionCompra
@@ -176,6 +304,10 @@ const Compras = () => {
         compraSeleccionada={compraSeleccionada}
         setCompraSeleccionada={setCompraSeleccionada}
         guardarEdicion={guardarEdicion}
+        detalles={detallesNuevos}
+        setDetalles={setDetallesNuevos}
+        empleados={empleados}
+        productos={productos}
       />
 
       <ModalEliminacionCompra
